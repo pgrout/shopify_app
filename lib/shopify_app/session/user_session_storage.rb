@@ -13,6 +13,7 @@ module ShopifyApp
         user = find_or_initialize_by(shopify_user_id: user[:id])
         user.shopify_token = auth_session.token
         user.shopify_domain = auth_session.domain
+        user.access_scopes = auth_session.extra[:scopes]
         user.save!
         user.id
       end
@@ -27,15 +28,33 @@ module ShopifyApp
         construct_session(user)
       end
 
+      def retrieve_access_scopes(id)
+        user = find_by(id: id)
+        user.access_scopes
+      end
+
+      def retrieve_access_scopes_by_shopify_user_id(user_id)
+        user = find_by(shopify_user_id: user_id)
+        user.access_scopes
+      end
+
       private
 
       def construct_session(user)
         return unless user
+
         ShopifyAPI::Session.new(
           domain: user.shopify_domain,
           token: user.shopify_token,
           api_version: user.api_version,
+          extra: { scopes: scopes(user) }
         )
+      end
+
+      def scopes(user)
+        user.access_scopes
+      rescue NotImplementedError, NoMethodError
+        nil
       end
     end
   end

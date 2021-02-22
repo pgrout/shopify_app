@@ -12,6 +12,8 @@ module ShopifyApp
       def store(auth_session, *_args)
         shop = find_or_initialize_by(shopify_domain: auth_session.domain)
         shop.shopify_token = auth_session.token
+        shop.access_scopes = auth_session.extra[:scopes]
+
         shop.save!
         shop.id
       end
@@ -26,6 +28,11 @@ module ShopifyApp
         construct_session(shop)
       end
 
+      def retrieve_access_scopes_by_shopify_domain(domain)
+        shop = find_by(shopify_domain: domain)
+        shop.access_scopes
+      end
+
       private
 
       def construct_session(shop)
@@ -35,7 +42,14 @@ module ShopifyApp
           domain: shop.shopify_domain,
           token: shop.shopify_token,
           api_version: shop.api_version,
+          extra: { scopes: scopes(shop) }
         )
+      end
+
+      def scopes(shop)
+        shop.access_scopes
+      rescue NotImplementedError, NoMethodError
+        nil
       end
     end
   end

@@ -16,5 +16,17 @@ module ShopifyApp
         &block
       )
     end
+
+    def access_scopes=(scopes)
+      super(scopes)
+    rescue NotImplementedError, NoMethodError
+      Rails.logger.warn("#access_scopes= must be defined to handle storing access scopes: #{scopes}")
+    end
+
+    def access_scopes
+      super
+    rescue NotImplementedError, NoMethodError => exception
+      raise exception.class, "#access_scopes= must be defined to hook into stored access scopes"
+    end
   end
 end

@@ -263,6 +263,56 @@ The current Shopify user will be stored in the rails session at `session[:shopif
 
 Read more about Online vs. Offline access [here](https://help.shopify.com/api/getting-started/authentication/oauth).
 
+### Access Scopes
+
+Storing and reading access scopes for shops and users can be done by defining the template class methods in the models that include the following modules:
+
+#### `ShopifyApp::ShopSessionStorage`
+```ruby
+class Shop < ActiveRecord::Base
+  include ShopifyApp::ShopSessionStorage
+  def access_scopes=(scopes)
+    # Store access scopes
+  end
+  def access_scopes
+    # Find access scopes
+  end
+end
+```
+
+#### `ShopifyApp::UserSessionStorage`
+```ruby
+class User < ActiveRecord::Base
+  include ShopifyApp::UserSessionStorage
+  def access_scopes=(scopes)
+    # Store access scopes
+  end
+  def access_scopes
+    # Find access scopes
+  end
+end
+```
+
+#### `access_scopes=(scopes)`
+Define how the current access scopes for shops and users will be stored. `ShopifyApp::ShopSessionStorage` and `ShopifyApp::UserSessionStorage` will invoke `access_scopes=` to store the access scopes tied to an access token after successful completion of the OAuth grant flow.
+
+By default, the shop_model and user_model generators will create a migration to add the `access_scopes` attribute to the `Shop` and `User` models with access scopes stored as follows:
+```ruby
+def access_scopes=(scopes)
+  super(scopes)
+end
+```
+
+#### `access_scopes`
+Define the lookup for access scopes for a shop and/or user. `ShopifyApp::ShopSessionStorage` and `ShopifyApp::UserSessionStorage` will invoke `access_scopes` whenever attempting to read access scopes for a merchant.
+
+By default, the shop_model and user_model generators will create a migration to add the `access_scopes` attribute to the `Shop` and `User` models with access scopes retrieved as follows:
+```ruby
+def access_scopes
+  super
+end
+```
+
 #### Migrating from shop-based to user-based token strategy
 1. Run the `user_model` generator as mentioned above.
 2. Ensure that both your `Shop` model and `User` model includes the necessary concerns `ShopifyApp::ShopSessionStorage` and `ShopifyApp::UserSessionStorage`.
