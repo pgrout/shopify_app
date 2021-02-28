@@ -67,12 +67,21 @@ module ShopifyApp
     end
 
     def shop_session_by_cookie
+ 
+      if session[:shopify].present?
+        if !session[:shop_id].present?
+          Rails.logger.debug("[ShopifyApp::LoginProtection] - use old cookie ")
+          session[:shop_id] = session[:shopify]
+        end
+      end
+
       return unless ShopifyApp.configuration.allow_cookie_authentication
       return unless session[:shop_id].present?
       ShopifyApp::SessionRepository.retrieve_shop_session(session[:shop_id])
     end
 
     def login_again_if_different_user_or_shop
+
       if session[:user_session].present? && params[:session].present? # session data was sent/stored correctly
         clear_session = session[:user_session] != params[:session] # current user is different from stored user
       end
